@@ -1,0 +1,41 @@
+// controlled input component
+function Input({id, label, error, onChange, ...props}) {
+  return (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <input {...props} onChange={e => onChange(e.target.value)} />
+      <span>{error}</span>
+    </div>
+   )
+}
+
+// form that we will wrap
+function Form({fieldsData, handleSubmit}) {
+  return (
+    <form onSubmit={handleSubmit}>
+      <Input {...fieldsData.email} />
+      <Input {...fieldsData.password} />
+      <button type="submit">Submit</button>
+    </form>
+  )
+}
+
+// fields config and structure
+const fieldsData = {
+  email: {
+    label: "Email",
+    placeholder: "Enter your email",
+    required: true,
+  },
+  password: {
+    label: "Password",
+    placeholder: "Enter your password",
+    type: "password",
+    required: true,
+  }
+}
+
+// magic happens here
+const ConnectedForm = CreateForm(Form, fieldsData)
+
+ReactDOM.render(<ConnectedForm />, mountNode)

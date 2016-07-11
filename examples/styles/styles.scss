@@ -1,0 +1,79 @@
+html,body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+.Interactive {
+
+  .playground {
+    height: 100%;
+    display: flex;
+  }
+
+  .playgroundPreview {
+    position: relative;
+    width: 40%;
+    padding: 20px;
+    & > div {
+      width: 100%;
+    }
+  }
+
+  .playgroundCode {
+    width: 60%;
+  }
+
+
+  .CodeMirror-code {
+    font-family: 'Source Code Pro', 'Inconsolata', 'Courier New', 'Courier', monospace;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+}
+
+.CodeMirror {
+  background: none !important;
+  pre {
+    color: #c2bdb2;
+  }
+}
+
+.playgroundStage {
+  height: 100%;
+  background: #222;
+  color: #f6f2ee;
+  transition: background-color 195ms ease-in;
+  -webkit-transition: background-color 195ms ease-in;
+}
+.playgroundStage.ReactCodeMirror--focused {
+  background: #181615;
+  transition: background-color 250ms ease-out;
+  -webkit-transition: background-color 250ms ease-out;
+}
+
+
+// .playgroundError {
+//   background: #bd4139;
+//   color: #f6f2ee;
+//   font-family: 'Source Code Pro', 'Inconsolata', 'Courier New', 'Courier', monospace;
+//   font-size: 10px;
+//   font-weight: normal;
+//   line-height: 1.2;
+//   overflow: scroll;
+//   padding: 20px;
+//   text-align: left;
+//   white-space: pre;
+//   width: 100%;
+//   margin: 0;
+//   padding: 20px 40px;
+//   position: absolute;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+// }
+
+
