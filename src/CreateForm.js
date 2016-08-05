@@ -105,17 +105,16 @@ export default function CreateForm(WrappedComponent, fieldsData) {
 
       return new Promise((resolve, reject)=> {
         // Don't run validation if validationThreshold exists and hasn't been met
-        if (field.validationThreshold && !field.error && !field.success) {
-          if (field.value && field.value.length < field.validationThreshold) {
+        if (field.validationThreshold && 
+            field.value &&
+            field.value.length < field.validationThreshold &&
+            !field.error && 
+            !field.success) {
             resolve()
             return
-          }
         }
-        // Assume loading on validation
-        // Note: showLoading is never set if validators resolve immediately
-        field.loading = true
-        // Validate field resolves if all validators pass and rejects the first validation that fails.
-        this.runValidationsForField(field, value)
+        // Resolves if all validators pass and rejects the first validation that fails.
+        const validations = this.runValidationsForField(field, value)
           .then(() => {
             if (this._isUnmounting) {
               resolve()
@@ -143,16 +142,10 @@ export default function CreateForm(WrappedComponent, fieldsData) {
             resolve()
           })
 
-        // If promises don't resolve immediately show loading state
-        _.defer(()=> {
-          if (this._isUnmounting) {
-            resolve()
-            return // hack
-          }
-          if (field.loading) {
-            this.setState({ fieldsData })
-          }
-        })
+        if (!validations.resolveImmediately) {
+          field.loading = true
+          this.setState({ fieldsData })
+        }
       })
     }
 
@@ -161,8 +154,9 @@ export default function CreateForm(WrappedComponent, fieldsData) {
     runValidationsForField(field, value) {
       const { fieldsData } = this.state
       let errors = []
+      let resolveImmediately = true
       let validators = _.clone(field.validators) || []
-      // if field is required add validation rule
+      // if field is required then add validation rule
       if (field.required) {
         const isRequired = (value, values)=> {
           if (value == undefined || value == null || value == "") {
@@ -178,17 +172,18 @@ export default function CreateForm(WrappedComponent, fieldsData) {
           let error = validator(value, fieldsData)
           let shouldBreak = false
           if (error) {
-            // Error can be a string or a promise
+            // Error can be a string
             if (_.isString(error)) {
               // Convert string error into promise and reject immediately
-              error = Promise.reject(new Error(error))
+              errors.push(Promise.reject(new Error(error)))
               shouldBreak = true
-            }
-            // Error should be a promise at this point
-            if (!_.isFunction(error.then)) {
+            // Error can be a promise
+            } else if (_.isFunction(error.then)) {
+              errors.push(error)
+              resolveImmediately = false
+            } else {
               throw new Error("Invalid return value from validation function. Return a promise or a string.")
             }
-            errors.push(error)
             // No need to check for more errors if error has
             // already returned
             if (shouldBreak) {
@@ -199,7 +194,9 @@ export default function CreateForm(WrappedComponent, fieldsData) {
       }
       // Resolves if ALL promises in the array resolve (or no validators).
       // Rejects if ANY promise in the array rejects.
-      return Promise.all(errors)
+      let promise = Promise.all(errors)
+      promise.resolveImmediately = resolveImmediately
+      return promise
     }
 
     runValidationsForAllFields() {
