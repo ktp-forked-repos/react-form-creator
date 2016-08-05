@@ -169,6 +169,9 @@
               field[data.validationEvent] = _lodash2.default.partial(_this2.handleFieldValidation, _lodash2.default, key);
             }
             field.onChange = _lodash2.default.partial(_this2.handleFieldChange, _lodash2.default, key);
+            field.onReset = _lodash2.default.bind(function () {
+              return _this2.onChange(fieldValues[_this2.id]);
+            }, field);
             // Map values to fields (see example for setup)
             if (fieldValues && _typeof(fieldValues[key]) !== (typeof undefined === 'undefined' ? 'undefined' : _typeof(undefined))) {
               field.value = _lodash2.default.clone(fieldValues[key]);
@@ -218,17 +221,12 @@
 
           return new Promise(function (resolve, reject) {
             // Don't run validation if validationThreshold exists and hasn't been met
-            if (field.validationThreshold && !field.error && !field.success) {
-              if (field.value && field.value.length < field.validationThreshold) {
-                resolve();
-                return;
-              }
+            if (field.validationThreshold && field.value && field.value.length < field.validationThreshold && !field.error && !field.success) {
+              resolve();
+              return;
             }
-            // Assume loading on validation
-            // Note: showLoading is never set if validators resolve immediately
-            field.loading = true;
-            // Validate field resolves if all validators pass and rejects the first validation that fails.
-            _this4.runValidationsForField(field, value).then(function () {
+            // Resolves if all validators pass and rejects the first validation that fails.
+            var validations = _this4.runValidationsForField(field, value).then(function () {
               if (_this4._isUnmounting) {
                 resolve();
                 return;
@@ -255,16 +253,10 @@
               resolve();
             });
 
-            // If promises don't resolve immediately show loading state
-            _lodash2.default.defer(function () {
-              if (_this4._isUnmounting) {
-                resolve();
-                return; // hack
-              }
-              if (field.loading) {
-                _this4.setState({ fieldsData: fieldsData });
-              }
-            });
+            if (!validations.resolveImmediately) {
+              field.loading = true;
+              _this4.setState({ fieldsData: fieldsData });
+            }
           });
         }
       }, {
@@ -273,8 +265,9 @@
           var fieldsData = this.state.fieldsData;
 
           var errors = [];
+          var resolveImmediately = true;
           var validators = _lodash2.default.clone(field.validators) || [];
-          // if field is required add validation rule
+          // if field is required then add validation rule
           if (field.required) {
             var isRequired = function isRequired(value, values) {
               if (value == undefined || value == null || value == "") {
@@ -297,17 +290,18 @@
                 var error = validator(value, fieldsData);
                 var shouldBreak = false;
                 if (error) {
-                  // Error can be a string or a promise
+                  // Error can be a string
                   if (_lodash2.default.isString(error)) {
                     // Convert string error into promise and reject immediately
-                    error = Promise.reject(new Error(error));
+                    errors.push(Promise.reject(new Error(error)));
                     shouldBreak = true;
-                  }
-                  // Error should be a promise at this point
-                  if (!_lodash2.default.isFunction(error.then)) {
+                    // Error can be a promise
+                  } else if (_lodash2.default.isFunction(error.then)) {
+                    errors.push(error);
+                    resolveImmediately = false;
+                  } else {
                     throw new Error("Invalid return value from validation function. Return a promise or a string.");
                   }
-                  errors.push(error);
                   // No need to check for more errors if error has
                   // already returned
                   if (shouldBreak) {
@@ -332,7 +326,9 @@
           }
           // Resolves if ALL promises in the array resolve (or no validators).
           // Rejects if ANY promise in the array rejects.
-          return Promise.all(errors);
+          var promise = Promise.all(errors);
+          promise.resolveImmediately = resolveImmediately;
+          return promise;
         }
       }, {
         key: 'runValidationsForAllFields',
@@ -440,23 +436,26 @@
           var _this7 = this;
 
           e && e.preventDefault();
-          this.runValidationsForAllFields().then(function () {
-            var allIsValid = _this7.refreshFormValidState();
-            if (allIsValid) {
-              var _fieldsData2 = _this7.state.fieldsData;
+          return new Promise(function (resolve, reject) {
+            _this7.runValidationsForAllFields().then(function () {
+              var allIsValid = _this7.refreshFormValidState();
+              var fieldsData = _this7.state.fieldsData;
               var onSubmit = _this7.props.onSubmit;
 
-              var submission = onSubmit(_fieldsData2, _this7.resetForm);
-              if (submission) {
-                _this7.handleFormSubmission(submission);
+              if (allIsValid) {
+                var submission = onSubmit(fieldsData, _this7.resetForm);
+                if (submission) {
+                  _this7.handleFormSubmission(submission);
+                } else {
+                  console.warn("nothing returned from form submission");
+                }
+                resolve(fieldsData);
               } else {
-                console.warn("nothing returned from form submission");
+                reject(fieldsData);
               }
-            } else {
-              console.warn("form is invalid");
-            }
-          }).catch(function (e) {
-            console.warn("form is invalid", e);
+            }).catch(function (e) {
+              reject(e);
+            });
           });
         }
       }, {
