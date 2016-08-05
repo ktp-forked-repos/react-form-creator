@@ -62,6 +62,7 @@ export default function CreateForm(WrappedComponent, fieldsData) {
           field[data.validationEvent] = _.partial(this.handleFieldValidation, _, key)
         }
         field.onChange = _.partial(this.handleFieldChange, _, key)
+        field.onReset = _.bind(()=> this.onChange(fieldValues[this.id]), field)
         // Map values to fields (see example for setup)
         if (fieldValues && typeof fieldValues[key] !== typeof undefined) {
           field.value = _.clone(fieldValues[key])
@@ -293,25 +294,28 @@ export default function CreateForm(WrappedComponent, fieldsData) {
     // Run on form submission
     submitForm(e) {
       e && e.preventDefault()
-      this.runValidationsForAllFields()
-        .then(() => {
-          let allIsValid = this.refreshFormValidState()
-          if (allIsValid) {
+      return new Promise((resolve, reject)=> {
+        this.runValidationsForAllFields()
+          .then(() => {
+            const allIsValid = this.refreshFormValidState()
             const { fieldsData } = this.state
             const { onSubmit } = this.props
-            let submission = onSubmit(fieldsData, this.resetForm)
-            if (submission) {
-              this.handleFormSubmission(submission)
+            if (allIsValid) {
+              let submission = onSubmit(fieldsData, this.resetForm)
+              if (submission) {
+                this.handleFormSubmission(submission)
+              } else {
+                console.warn("nothing returned from form submission")
+              }
+              resolve(fieldsData)
             } else {
-              console.warn("nothing returned from form submission")
+              reject(fieldsData)
             }
-          } else {
-            console.warn("form is invalid")
-          }
-        })
-        .catch((e) => {
-          console.warn("form is invalid", e)
-        })
+          })
+          .catch((e) => {
+            reject(e)
+          })
+      })
     }
 
     render() {
