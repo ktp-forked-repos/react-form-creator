@@ -1,26 +1,20 @@
 {
-  "name": "react-npm-es6-boilerplate",
-  "description": "A boilerplate for creating react npm packages",
-  "version": "0.1.0",
+  "name": "react-form-creator",
+  "description": "Declarative forms for React",
+  "version": "1.0.1",
+  "main": "dist/index.js",
   "author": "Robert Gonzales",
   "license": "MIT",
   "keywords": [
     "react",
-    "es6",
-    "npm",
-    "hmr",
-    "hot",
-    "babel",
-    "webpack",
-    "boilerplate",
-    "starter",
-    "publish"
+    "reactjs",
+    "form"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/robertgonzales/react-npm-es6-boilerplate.git"
+    "url": "git://github.com/robertgonzales/react-form-creator"
   },
-  "bugs": "https://github.com/robertgonzales/react-npm-es6-boilerplate/issues",
+  "bugs": "https://github.com/robertgonzales/react-form-creator/issues",
   "scripts": {
     "clean:build": "node ./bin/clean.js createdir",
     "build:html": "node ./bin/buildHtml.js",
