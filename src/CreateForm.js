@@ -66,7 +66,7 @@ export default function CreateForm(WrappedComponent, fieldsData) {
         // Map values to fields (see example for setup)
         if (fieldValues && typeof fieldValues[key] !== typeof undefined) {
           field.value = _.clone(fieldValues[key])
-        } else if (field.defaultValue) {
+        } else if (typeof field.defaultValue !== typeof undefined) {
           field.value = _.clone(field.defaultValue)
         } else {
           field.value = null
