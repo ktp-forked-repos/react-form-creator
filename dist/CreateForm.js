@@ -175,6 +175,8 @@
             // Map values to fields (see example for setup)
             if (fieldValues && _typeof(fieldValues[key]) !== (typeof undefined === 'undefined' ? 'undefined' : _typeof(undefined))) {
               field.value = _lodash2.default.clone(fieldValues[key]);
+            } else if (field.defaultValue) {
+              field.value = _lodash2.default.clone(field.defaultValue);
             } else {
               field.value = null;
             }

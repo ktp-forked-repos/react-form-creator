@@ -66,6 +66,8 @@ export default function CreateForm(WrappedComponent, fieldsData) {
         // Map values to fields (see example for setup)
         if (fieldValues && typeof fieldValues[key] !== typeof undefined) {
           field.value = _.clone(fieldValues[key])
+        } else if (field.defaultValue) {
+          field.value = _.clone(field.defaultValue)
         } else {
           field.value = null
         }
@@ -75,7 +77,7 @@ export default function CreateForm(WrappedComponent, fieldsData) {
     }
 
     // Run on field change
-    handleFieldChange(value, key) { 
+    handleFieldChange(value, key) {
       const { onChange, onDirty } = this.props
       const { fieldsData } = this.state
       // Update value
@@ -105,10 +107,10 @@ export default function CreateForm(WrappedComponent, fieldsData) {
 
       return new Promise((resolve, reject)=> {
         // Don't run validation if validationThreshold exists and hasn't been met
-        if (field.validationThreshold && 
+        if (field.validationThreshold &&
             field.value &&
             field.value.length < field.validationThreshold &&
-            !field.error && 
+            !field.error &&
             !field.success) {
             resolve()
             return
@@ -130,9 +132,9 @@ export default function CreateForm(WrappedComponent, fieldsData) {
             if (this._isUnmounting) {
               resolve()
               return
-            } 
+            }
             if (!(e && e.message)) {
-              throw new Error("Invalid promise rejection. Return an Error obj.") 
+              throw new Error("Invalid promise rejection. Return an Error obj.")
             }
             field.error = e.message
             field.success = false
@@ -190,7 +192,7 @@ export default function CreateForm(WrappedComponent, fieldsData) {
               break
             }
           }
-        }  
+        }
       }
       // Resolves if ALL promises in the array resolve (or no validators).
       // Rejects if ANY promise in the array rejects.
@@ -241,9 +243,9 @@ export default function CreateForm(WrappedComponent, fieldsData) {
 
     // Handles returned promise from onSubmit
     handleFormSubmission(submission) {
-      let promise = submission.then 
+      let promise = submission.then
                     ? submission
-                    : submission.promise && submission.promise.then 
+                    : submission.promise && submission.promise.then
                       ? submission.promise
                       : null
       if (promise) {
@@ -317,13 +319,13 @@ export default function CreateForm(WrappedComponent, fieldsData) {
 
     render() {
       return (
-        <WrappedComponent 
-          {...this.props} 
+        <WrappedComponent
+          {...this.props}
           {...this.state}
           handleReset={this.resetForm}
-          handleSubmit={this.submitForm} 
+          handleSubmit={this.submitForm}
         />
-      ) 
+      )
     }
 
   }
