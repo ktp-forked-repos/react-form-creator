@@ -402,6 +402,7 @@
                 isSubmitting: false,
                 submitSuccess: true
               });
+              _lodash2.default.isFunction(_this6.props.onSubmitSuccess) && _this6.props.onSubmitSuccess(fieldsData);
             }).catch(function (err) {
               if (_this6._isUnmounting) {
                 return; // hack
@@ -410,6 +411,7 @@
                 isSubmitting: false,
                 submitFailure: err
               });
+              _lodash2.default.isFunction(_this6.props.onSubmitFailure) && _this6.props.onSubmitFailure(fieldsData);
             });
           } else {
             console.warn("form submission did not return a promise");
@@ -484,7 +486,9 @@
       onValid: _react.PropTypes.func,
       onDirty: _react.PropTypes.func,
       onInvalid: _react.PropTypes.func,
-      onPristine: _react.PropTypes.func
+      onPristine: _react.PropTypes.func,
+      onSubmitSuccess: _react.PropTypes.func,
+      onSubmitFailure: _react.PropTypes.func
     };
 
     ConnectedForm.defaultProps = {

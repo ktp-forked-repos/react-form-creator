@@ -263,6 +263,8 @@ export default function CreateForm(WrappedComponent, fieldsData) {
               isSubmitting: false,
               submitSuccess: true
             })
+            _.isFunction(this.props.onSubmitSuccess) &&
+              this.props.onSubmitSuccess(fieldsData)
           })
           .catch((err)=> {
             if (this._isUnmounting) {
@@ -272,6 +274,8 @@ export default function CreateForm(WrappedComponent, fieldsData) {
               isSubmitting: false,
               submitFailure: err
             })
+            _.isFunction(this.props.onSubmitFailure) &&
+              this.props.onSubmitFailure(fieldsData)
           })
       } else {
         console.warn("form submission did not return a promise")
@@ -344,6 +348,8 @@ export default function CreateForm(WrappedComponent, fieldsData) {
     onDirty: PropTypes.func,
     onInvalid: PropTypes.func,
     onPristine: PropTypes.func,
+    onSubmitSuccess: PropTypes.func,
+    onSubmitFailure: PropTypes.func,
   }
 
   ConnectedForm.defaultProps = {
